@@ -44,7 +44,9 @@ namespace GameWizard
 
         #region UI Variables
         [SerializeField]
-        private string playerPrefabName;
+        private string VR_PlayerPrefabName;
+        [SerializeField]
+        private string PC_PlayerPrefabName;
         [SerializeField]
         private GameObject panel_Room;
         [SerializeField]
@@ -413,7 +415,8 @@ namespace GameWizard
         {
             Vector3 position = Photon_GameSetting.instance.playerSpawningInfo[myPlayerID-1].position;
             Quaternion q = Photon_GameSetting.instance.playerSpawningInfo[myPlayerID-1].rotation;
-            GameObject p = PhotonNetwork.Instantiate(Path.Combine("InGamePrefabs", playerPrefabName), position, q, 0);
+            string name = (GameManager_Main.instance.hasVREnvironment) ? VR_PlayerPrefabName : PC_PlayerPrefabName;
+            GameObject p = PhotonNetwork.Instantiate(Path.Combine("InGamePrefabs", name), position, q, 0);
 
             p.GetComponent<PlayerStatus>().SetPlayerID(myPlayerID - 1);
             PlayerSkill playerSkill = p.GetComponent<PlayerSkill>();

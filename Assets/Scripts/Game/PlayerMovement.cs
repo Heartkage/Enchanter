@@ -13,7 +13,7 @@ using Photon.Pun;
 
 namespace GameWizard
 {
-    [RequireComponent(typeof(PhotonView)), RequireComponent(typeof(PlayerStatus)), RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(PhotonView)), RequireComponent(typeof(PlayerStatus))]
     public class PlayerMovement : MonoBehaviour
     {
 
@@ -21,15 +21,14 @@ namespace GameWizard
 
         public Transform playerCamera;
         public SteamVR_TrackedController leftController;
-        [Range(10, 50)]
+        [Range(10, 100)]
         public float keyboardRotationSpeed = 10f;
+        float yRotation;
 
         private float touchpadThreshold = 0.25f;
         private PhotonView _photonView;
         private PlayerStatus _playerStatus;
         private Rigidbody _myRigi;
-        private CharacterController _characterController;
-        //private CapsuleCollider _collider;
         private BoxCollider _collider;
         private Vector3 movement;
 
@@ -40,14 +39,21 @@ namespace GameWizard
 
             _playerStatus = GetComponent<PlayerStatus>();
             _photonView = GetComponent<PhotonView>();
+
             _myRigi = GetComponent<Rigidbody>();
-            //_collider = GetComponent<CapsuleCollider>();
             _collider = GetComponent<BoxCollider>();
-            _characterController = GetComponent<CharacterController>();
+            
+            if (!_hasVREnvironment && GameManager_Main.instance.allowKeyboardInput)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+            
+
             if (!_photonView.IsMine)
             {
                 Destroy(this);
             }
+            
         }
 
         // Update is called once per frame
@@ -80,6 +86,7 @@ namespace GameWizard
                         //transform.Rotate(Vector3.up, Time.deltaTime * -keyboardRotationSpeed);
                     }
 
+                    CameraRotation();
                     Movement(movement, _playerStatus.CurrentMovementSpeed());
 
                 }
@@ -137,12 +144,34 @@ namespace GameWizard
             }
         }
 
+
+        void CameraRotation()
+        {
+            float mouseX = Input.GetAxis("Mouse X") * keyboardRotationSpeed * Time.deltaTime;
+            float mouseY = Input.GetAxis("Mouse Y") * keyboardRotationSpeed * Time.deltaTime;
+
+            yRotation -= mouseY;
+            yRotation = Mathf.Clamp(yRotation, -80f, 80f);
+
+            playerCamera.localRotation = Quaternion.Euler(yRotation, 0, 0);
+            transform.Rotate(Vector3.up * mouseX);
+
+        }
+
         void Movement(Vector3 direction, float speed)
         {
+
+
             Vector3 d = new Vector3(direction.x, 0, direction.z);
             //Debug.DrawRay(playerCamera.position, d * speed, Color.red);
             Vector3 f = d * speed * Time.deltaTime;
-            _myRigi.AddForce(f, ForceMode.Impulse);
+
+            if (_hasVREnvironment)
+                _myRigi.AddForce(f, ForceMode.Impulse);
+            else
+            {
+                _myRigi.velocity = new Vector3(d.x*speed/2f, _myRigi.velocity.y, d.z*speed/2f);
+            }
             //Debug.Log("d:" + direction + ", speed" + speed);
         }
     }

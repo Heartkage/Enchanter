@@ -16,7 +16,7 @@ namespace GameWizard
     public class CheckThePlayer : MonoBehaviour
     {
 
-        public GameObject CameraRig;
+        public GameObject PlayerCamera;
         public bool thisPlayerIsLocal = true;
 
         private PhotonView photonView;
@@ -28,7 +28,7 @@ namespace GameWizard
             if (!photonView.IsMine)
             {
                 thisPlayerIsLocal = false;
-                if(CameraRig != null) Destroy(CameraRig);
+                if(PlayerCamera != null) Destroy(PlayerCamera);
             }
         }
 
